@@ -29,6 +29,7 @@ casper.start("http://localhost:8080/uilib-sample/test-resources/sap/m/demokit/in
 	debugger;
     this.echo(nbLinks.length + " items founds");
     this.mouse.move("#__tile0");
+    this.viewport(1900, 800);
 });
 
 //casper.waitUntilVisible(".sapMTCAnim", function() {
@@ -49,20 +50,20 @@ next = function() {
     var image;
     image = "bbcshot" + currentLink + ".png";
     images.push(image);
-    this.echo("Processing image " + currentLink);
-    this.captureSelector(image, '.sapMShellContent');
     
-//    debugger;
     if (currentLink < nbLinks.length) {
+    	this.echo("Clicking link "+ currentLink);
     	this.click("#__tile"+currentLink);
-    	this.echo("into the if "+ currentLink);
-        //this.click(".carousel_itemList_li[rel='" + currentLink + "']");
-        this.wait(1000, function() {
-        	this.echo("Waiting 111");    
-        });
-        casper.back();
-        currentLink ++;
-        next();
+    	
+    	this.wait(1000, function() {
+    this.echo("Processing image " + currentLink);
+    		this.capture(image);
+    		currentLink ++;
+            this.wait(1000, function() {
+            	casper.back();
+                this.then(next);
+            });
+    	});
     } else {
         this.then(buildPage);
     }
