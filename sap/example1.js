@@ -5,14 +5,17 @@
  * Create a mosaic image from all headline photos on BBC homepage
  */
 var casper = require("casper").create({
-// verbose: true,
-// logLevel: "debug"
+	verbose : true,
+	logLevel : "debug"
 });
 
 nbLinks = 0;
 currentLink = 0;
 var images = [];
 var buildPage, next;
+
+var url = "http://localhost:8080/uilib-sample/test-resources/sap/m/demokit/inbox/index.html";
+var siteName = "My Inbox";
 
 // helper to hide some element from remote DOM
 casper.hide = function(selector) {
@@ -21,16 +24,32 @@ casper.hide = function(selector) {
 	}, selector);
 };
 
-casper.start("http://localhost:8080/uilib-sample/test-resources/sap/m/demokit/inbox/index.html", function() {
+casper
+		.start(
+				url,
+				function() {
 
-	nbLinks = this.evaluate(function() {
-		return __utils__.findAll('.sapMTile');
-	});
-	debugger;
-	this.echo(nbLinks.length + " items founds");
-	this.mouse.move("#__tile0");
-	this.viewport(1900, 800);
-});
+					this.test.assert(this.getCurrentUrl() === url, 'url is the one expected');
+
+					this.test.assertHttpStatus(200, siteName + ' is up');
+
+					this.test.assertTitle('My Inbox', siteName + ' has the correct title');
+
+					this.test
+							.assertResourceExists(
+									'http://localhost:8080/uilib-sample/resources/sap/ui/core/themes/sap_bluecrystal/img/bg_white_transparent.png',
+									'Background exists');
+
+					this.test.assertTextExists('Leave Requests', 'page body contains "Leave Requests"');
+
+					nbLinks = this.evaluate(function() {
+						return __utils__.findAll('.sapMTile');
+					});
+					debugger;
+					this.echo(nbLinks.length + " items founds");
+					this.mouse.move("#__tile0");
+					this.viewport(1900, 800);
+				});
 
 // casper.waitUntilVisible(".sapMTCAnim", function() {
 // this.echo("Moving over pause button");
@@ -51,19 +70,21 @@ next = function() {
 	image = "bbcshot" + currentLink + ".png";
 	images.push(image);
 
-	if (currentLink < nbLinks.length) {
+	if (currentLink < 1) {
 		this.echo("Clicking link " + currentLink);
-		this.click("#__tile" + currentLink);
+		this.test.assertExists("#__tile" + currentLink);
+		this.mouse.move("#__tile" + currentLink);
+		this.mouse.down("#__tile" + currentLink);
 
-		this.wait(1000, function() {
+		this.waitUntilVisible("#__button4", function() {
 			this.echo("Processing image " + currentLink);
 			this.capture(image);
-			currentLink++;
-			this.wait(1000, function() {
-				this.echo("Back from link " + currentLink);
-				casper.back();
-				this.then(next);
-			});
+		});
+		currentLink++;
+		this.wait(1000, function() {
+			this.echo("Back from link " + currentLink);
+			casper.back();
+			this.then(next);
 		});
 	} else {
 		this.then(buildPage);
@@ -88,6 +109,16 @@ buildPage = function() {
 	});
 };
 
+finish = function() {
+
+	casper.test.comment('Ending Testing');
+	// require('utils').dump(this.test.getFailures());
+	// require('utils').dump(this.test.getPasses());
+	this.test.done();
+	this.exit();
+};
+
 casper.then(next);
+casper.then(finish);
 
 casper.run();
