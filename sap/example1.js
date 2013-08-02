@@ -45,7 +45,6 @@ casper
 					nbLinks = this.evaluate(function() {
 						return __utils__.findAll('.sapMTile');
 					});
-					debugger;
 					this.echo(nbLinks.length + " items founds");
 					this.mouse.move("#__tile0");
 					this.viewport(1900, 800);
@@ -72,10 +71,19 @@ next = function() {
 
 	if (currentLink < 1) {
 		this.echo("Clicking link " + currentLink);
-		this.test.assertExists("#__tile" + currentLink);
-		this.mouse.move("#__tile" + currentLink);
-		this.mouse.down("#__tile" + currentLink);
-
+		var tileSelector = "#__tile" + currentLink;
+		this.test.assertExists(tileSelector);
+		debugger;
+		this.mouse.move(tileSelector);
+		this.mouseEvent('mousedown', tileSelector);
+//		this.mouse.down(tileSelector);
+//		this.mouse.click(tileSelector);
+//		this.mouseEvent('mouseup', tileSelector);
+		this.mouseEvent('tap', tileSelector);
+//		this.mouseEvent('click', tileSelector);
+		
+		this.echo("After clicked " + currentLink);
+		
 		this.waitUntilVisible("#__button4", function() {
 			this.echo("Processing image " + currentLink);
 			this.capture(image);
